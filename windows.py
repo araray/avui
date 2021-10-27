@@ -1,6 +1,8 @@
 import curses
 import primitives
 
+from curses import panel
+
 class windows():
     dim = None
     pos = None
@@ -10,6 +12,7 @@ class windows():
     lines_contents = []
     line_top = ''
     line_bot = ''
+    panel = None
 
     def __init__(self):
         self.dim = primitives.rectangle()
@@ -24,6 +27,10 @@ class windows():
         for tag in tags:
             self.tag_window(tag)
         self.cwin = win
+        self.panel = panel.new_panel(self.cwin)
+        self.panel.top()
+        self.panel.show()
+        panel.update_panels()
         self.cwin.immedok(self.autorefresh)
         self.update_window_contents()
         return win
@@ -39,6 +46,12 @@ class windows():
 
     def status_bar_info(self):
         pass
+
+    def hide(self):
+        self.panel.hide()
+
+    def show(self):
+        self.panel.show()
 
     def window_title(self, title):
         title = f' {title} '

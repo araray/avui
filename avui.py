@@ -3,6 +3,9 @@ import windows
 import textwrap
 import sys
 
+from curses import panel
+
+
 class avui():
     stdscr = None
     windows = None
@@ -12,7 +15,6 @@ class avui():
     max_y = 0
     msg_type = {}
     conf = {}
-    win_map = []
     debug = ''
 
     def __init__(self):
@@ -53,10 +55,6 @@ class avui():
         self.max_y, self.max_x = self.get_max_yx(self.stdscr)
         curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_YELLOW)
         self.msg_type['ALERT'] = curses.color_pair(3) | curses.A_BLINK | curses.A_BOLD
-        # initializes the windows map
-        self.win_map = [0] * self.max_y
-        for y in range(self.max_y):
-            self.win_map[y] = [0] * self.max_x
 
     def finalize(self):
         self.stdscr.clear()
@@ -68,30 +66,14 @@ class avui():
         curses.endwin()        
 
     def refresh(self, target):
+        curses.panel.update_panels()
         target.refresh()
 
     def add_window(self, dim_y, dim_x, pos_y, pos_x, *tags):
         win = windows.windows()
         win.new_window(dim_y, dim_x, pos_y, pos_x, *tags)
         self.windows.append(win)
-        self.winmap(pos_y, pos_x, dim_y, dim_x)
         self.refresh(win.cwin)
-
-    def winmap(self, pos_y, pos_x, dim_y, dim_x, c = 1, *op):
-        for y in range(pos_y, pos_y + dim_y):
-            for x in range(pos_x, pos_x + dim_x):
-                self.win_map[y][x] += c
-
-    def is_place_free(self, pos_y, pos_x, height, width):
-        for y in range(pos_y, pos_y + height):
-            for x in range(pos_x, pos_x + width):
-                if self.win_map[y][x] > 0:
-                    for win in self.windows:
-                        if y in range(win.pos.y, win.pos.y + win.dim.y):
-                            if x in range(win.pos.x, win.pos.x + win.dim.x):
-                                win.tag_window('ERROR_WINDOWS_COLLISION')
-                    return False
-        return True
 
     def get_win_by_tag(self, tag):
         wins = []
@@ -116,9 +98,17 @@ class avui():
                     win.get_window_contents()
                     break
 
-    #FIX
-    def find_place_for_window(self, win):
-        pass
+    def hide_win(self, win):
+        win.hide()
+        self.refresh(self.stdscr)
+
+    def show_win(self, win):
+        win.show()
+        self.refresh(self.stdscr)
+
+    def move_win(self, win, new_y, new_x):
+        win.move_window(new_y, new_x)
+        self.refresh(self.stdscr)
 
     def add_n_windows(self, N, Y = 0, X = 0, *tags):
         spacer = 1
