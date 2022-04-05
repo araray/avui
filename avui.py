@@ -1,10 +1,9 @@
 import curses
-import windows
-import textwrap
 import sys
+import textwrap
 
 from curses import panel
-
+from . import windows
 
 class avui():
     stdscr = None

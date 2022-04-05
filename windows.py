@@ -1,7 +1,7 @@
 import curses
-import primitives
 
 from curses import panel
+from . import primitives
 
 class windows():
     dim = None
